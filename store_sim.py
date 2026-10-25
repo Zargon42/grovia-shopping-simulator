@@ -1171,7 +1171,7 @@ def plot_layout(store: Store, path: Path):
 def plot_distance_bars(summ: pd.DataFrame, strategies, path: Path):
     lts = sorted(summ.list_type.unique())
     sizes = sorted(summ.list_size.unique())
-    fig, axes = plt.subplots(1, len(lts), figsize=(6 * len(lts), 4.5), sharey=True, squeeze=False,
+    fig, axes = plt.subplots(1, len(lts), figsize=(6.4 * len(lts), 6), sharey=True, squeeze=False,
                              constrained_layout=True)
     w = 0.8 / len(strategies)
     for ax, lt in zip(axes[0], lts):
@@ -1180,12 +1180,19 @@ def plot_distance_bars(summ: pd.DataFrame, strategies, path: Path):
             med = sub["dist_m_median"]
             err = [(med - sub["dist_m_q25"]).clip(lower=0), (sub["dist_m_q75"] - med).clip(lower=0)]
             ax.bar(np.arange(len(sizes)) + k * w - 0.4 + w / 2, med, w, yerr=err, capsize=2,
-                   label=f"{sid} {st.label}")
+                   label=sid)
         ax.set_xticks(range(len(sizes)))
         ax.set_xticklabels([f"{s} items" for s in sizes])
-        ax.set_title(f"List type: {lt}")
-        ax.set_ylabel("Walking distance (m), median with IQR")
-    axes[0][0].legend(fontsize=8)
+        ax.set_title(f"List type: {lt}", fontsize=15)
+        ax.set_ylabel("Walking distance (m), median with IQR", fontsize=13)
+        ax.set_xlabel("Shopping-list size", fontsize=13)
+        ax.tick_params(axis="both", labelsize=12)
+    handles, _ = axes[0][0].get_legend_handles_labels()
+    legend_labels = [
+        "S0 List order", "S1 Shortest heuristic", "S2 Category route", "S3 Fixed walk",
+        "S4 Staple search", "S5 Calibrated detours", "S6 Shopper profiles",
+    ]
+    fig.legend(handles, legend_labels, loc="outside lower center", ncol=4, frameon=False, fontsize=11)
     fig.savefig(path, dpi=150)
     plt.close(fig)
 
@@ -1193,13 +1200,15 @@ def plot_distance_bars(summ: pd.DataFrame, strategies, path: Path):
 def plot_tradeoff(summ: pd.DataFrame, strategies, path: Path):
     sub = summ[summ.list_type == "random"]
     sizes = sorted(sub.list_size.unique())
-    fig, axes = plt.subplots(1, len(sizes), figsize=(5.2 * len(sizes), 5),
+    ncols = 2
+    nrows = (len(sizes) + ncols - 1) // ncols
+    fig, axes = plt.subplots(nrows, ncols, figsize=(12.8, 4.75 * nrows),
                              squeeze=False, constrained_layout=True)
     palette = {"S0": "#d55e00", "S1": "#0072b2", "S2": "#009e73", "S3": "#cc79a7",
                "S4": "#e69f00", "S5": "#56b4e9", "S6": "#6a3d9a"}
     label_offsets = {"S0": (7, 6), "S1": (7, 8), "S2": (7, 6), "S3": (7, -12),
                      "S4": (7, 6), "S5": (7, 6), "S6": (7, -10)}
-    for ax, size in zip(axes[0], sizes):
+    for ax, size in zip(axes.ravel(), sizes):
         panel = sub[sub.list_size == size].set_index("strategy")
         for sid, st in strategies.items():
             if sid not in panel.index:
@@ -1216,10 +1225,11 @@ def plot_tradeoff(summ: pd.DataFrame, strategies, path: Path):
             ax.errorbar(x, y, xerr=xerr, yerr=yerr, fmt="o", color=color,
                         ecolor=color, elinewidth=1.2, capsize=3, markersize=7, zorder=3)
             ax.annotate(sid, (x, y), xytext=label_offsets.get(sid, (7, 6)), textcoords="offset points",
-                        color=color, fontsize=9, fontweight="bold")
-        ax.set_title(f"{size} items")
+                        color=color, fontsize=11, fontweight="bold")
+        ax.set_title(f"{size} items", fontsize=14)
         ax.grid(True, color="#e5e5e5", linewidth=0.8)
         ax.set_axisbelow(True)
+        ax.tick_params(axis="both", labelsize=11)
         valid = panel.dropna(subset=["dist_m_median", "cold_mean_min_median"])
         if not valid.empty:
             x_low, x_high = valid["dist_m_q25"].min(), valid["dist_m_q75"].max()
@@ -1228,14 +1238,23 @@ def plot_tradeoff(summ: pd.DataFrame, strategies, path: Path):
             y_pad = max((y_high - y_low) * 0.18, 0.25)
             ax.set_xlim(max(0, x_low - x_pad), x_high + x_pad)
             ax.set_ylim(max(0, y_low - y_pad), y_high + y_pad)
-    axes[0][0].set_ylabel("Cold items' mean time in cart (min)")
-    for ax in axes[0]:
-        ax.set_xlabel("Walking distance (m)")
+    for index, ax in enumerate(axes.ravel()):
+        if index >= len(sizes):
+            ax.set_axis_off()
+            continue
+        if index % ncols == 0:
+            ax.set_ylabel("Cold items' mean time in cart (min)", fontsize=13)
+        ax.set_xlabel("Walking distance (m)", fontsize=13)
+    short_labels = {
+        "S0": "S0 List order", "S1": "S1 Shortest heuristic", "S2": "S2 Category route",
+        "S3": "S3 Fixed walk", "S4": "S4 Staple search", "S5": "S5 Calibrated detours",
+        "S6": "S6 Shopper profiles",
+    }
     handles = [plt.Line2D([], [], color=palette.get(sid, "#555555"), marker="o", linestyle="none",
-                          label=f"{sid}: {st.label}") for sid, st in strategies.items()]
-    fig.legend(handles=handles, loc="outside lower center", ncol=min(len(handles), 3), frameon=False,
-               fontsize=8)
-    fig.suptitle("Route distance vs cold exposure | random lists, medians and IQR\nEach list size uses its own axis scale")
+                          label=short_labels[sid]) for sid in strategies]
+    fig.legend(handles=handles, loc="outside lower center", ncol=4, frameon=False, fontsize=10)
+    fig.suptitle("Route distance vs cold exposure | random lists, medians and IQR\nEach list size uses its own axis scale",
+                 fontsize=16)
     fig.savefig(path, dpi=150)
     plt.close(fig)
 
@@ -1268,11 +1287,11 @@ def plot_representative_trips(store: Store, representative_data: dict, path: Pat
     strategies = representative_data["strategies"]
     colors = {"S0": "#d95f02", "S1": "#1b9e77", "S2": "#7570b3", "S3": "#e7298a",
               "S4": "#66a61e", "S5": "#1f78b4", "S6": "#6a3d9a"}
-    fig, axes = plt.subplots(1, len(strategies), figsize=(4.2 * len(strategies), 5),
-                             squeeze=False, sharex=True, sharey=True, constrained_layout=True)
+    fig, axes = plt.subplots(2, 4, figsize=(16, 9), sharex=True, sharey=True, constrained_layout=True)
+    axes = axes.ravel()
     base_segments = [[(store.G.nodes[u]["x"], store.G.nodes[u]["y"]),
                       (store.G.nodes[v]["x"], store.G.nodes[v]["y"])] for u, v in store.G.edges]
-    for ax, (sid, result) in zip(axes[0], strategies.items()):
+    for ax, (sid, result) in zip(axes, strategies.items()):
         ax.add_collection(LineCollection(base_segments, colors="#dddddd", linewidths=1, zorder=1))
         route = result["physical_route"]
         points = [(store.G.nodes[n]["x"], store.G.nodes[n]["y"]) for n in route]
@@ -1285,17 +1304,21 @@ def plot_representative_trips(store: Store, representative_data: dict, path: Pat
         px, py = zip(*pickup_points)
         ax.scatter(px, py, facecolors="white", edgecolors=color, s=42, linewidths=1.2, zorder=4)
         for number, (px_i, py_i) in enumerate(zip(px, py), start=1):
-            ax.text(px_i, py_i, str(number), fontsize=6, ha="center", va="center", zorder=5)
+            ax.text(px_i, py_i, str(number), fontsize=8, ha="center", va="center", zorder=5)
         entrance = store.G.nodes[store.entrance]
         ax.scatter(entrance["x"], entrance["y"], marker="^", s=100, color="black", zorder=6)
         for checkout in store.checkouts:
             checkout_node = store.G.nodes[checkout]
             ax.scatter(checkout_node["x"], checkout_node["y"], marker="s", s=70, color="black", zorder=6)
-        ax.set_title(f"{sid}: {result['label']}\n{result['distance_m']:.0f} m, {result['total_min']:.1f} min")
+        ax.set_title(f"{sid} · {result['distance_m']:.0f} m, {result['total_min']:.1f} min", fontsize=12)
         ax.set_aspect("equal")
-        ax.set_xlabel("x (m)")
-    axes[0][0].set_ylabel("y (m)")
-    fig.suptitle("Representative trip routes (simulated)")
+        ax.set_xlabel("x (m)", fontsize=10)
+        ax.tick_params(axis="both", labelsize=9)
+    for ax in axes[len(strategies):]:
+        ax.set_axis_off()
+    axes[0].set_ylabel("y (m)", fontsize=10)
+    axes[4].set_ylabel("y (m)", fontsize=10)
+    fig.suptitle("Representative trip routes by strategy (simulated)", fontsize=16)
     fig.savefig(path, dpi=180)
     plt.close(fig)
 
