@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.py[cod]
+sim_out/
+smoke-results/
+*.log
+.pytest_cache/
+.coverage
+.DS_Store
+Thumbs.db

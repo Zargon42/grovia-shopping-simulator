@@ -1,0 +1,88 @@
+STORE: Lidl_store  (104 nodes, 123 edges, 3 checkout node(s))
+lists per size: 100, seed: 42, speed: 0.8 m/s, pick time: 18.0 s
+group order for S2: [['heavy'], ['dry', 'beverage'], ['fresh'], ['frozen']]
+S4 synthetic staples: about 20% of ['dry', 'fresh'] products
+S5 targets 69% travel deviation beyond its shortest-tour purchase order.
+This S5 calibration uses the mean path-decomposition shares reported in SSRN 942570; its aisle excursions are a simulation, not a directly estimated individual shopper model.
+S6 profile scenario weights: {'focused': 0.55, 'familiar': 0.3, 'exploratory': 0.15}.
+S6 maximum extra distance for one aisle detour: 18.0 m.
+S6 samples a shopper profile and makes probabilistic item choices using distance, list order, category continuity, and staple familiarity; browsing detours become less likely over the trip.
+S6 profile weights and behaviour strengths are scenario assumptions, not estimates from the cited studies. Incidental purchases and shelf-level consideration are not modelled.
+All values are simulated. Category mix, walking speed, pick time, and shopper assumptions are scenario inputs.
+
+Walking distance (m), median  [list type: random]
+list_size     6      12     24     40
+strategy                             
+S0         165.0  303.0  585.0  936.0
+S1          99.0  138.0  189.0  234.0
+S2         141.0  207.0  300.0  369.0
+S3         405.0  453.0  453.0  453.0
+S4         345.0  411.0  471.0  508.5
+S5         315.0  435.0  604.5  750.0
+S6         111.0  189.0  319.5  495.0
+
+Total trip time (min), median  [list type: random]
+list_size     6      12     24     40
+strategy                             
+S0          5.24   9.91  19.39  31.50
+S1          3.86   6.48  11.14  16.88
+S2          4.74   7.91  13.45  19.69
+S3         10.24  13.04  16.64  21.44
+S4          8.99  12.16  17.01  22.59
+S5          8.36  12.66  19.79  27.62
+S6          4.11   7.54  13.86  22.31
+
+Mean minutes in cart, fresh + frozen items, median  [list type: random]
+list_size    6     12     24     40
+strategy                           
+S0         2.47  4.69   9.38  15.26
+S1         2.24  3.89   6.81  10.33
+S2         1.24  2.15   3.67   5.12
+S3         3.88  4.86   6.58   8.82
+S4         4.59  6.94  10.51  13.66
+S5         5.50  8.20  13.05  17.48
+S6         2.22  3.89   6.98  11.31
+
+Mean minutes in cart, frozen items, median  [list type: random]
+list_size    6     12    24     40
+strategy                          
+S0         2.73  5.26  9.92  15.39
+S1         1.66  3.25  5.41   7.82
+S2         0.74  0.88  1.22   1.71
+S3         3.67  4.30  8.09  10.74
+S4         2.99  4.61  6.77   9.51
+S5         3.85  7.38  9.94  13.58
+S6         1.81  3.84  6.48  10.79
+
+Aisle re-entries, median  [list type: random]
+list_size    6     12    24     40
+strategy                          
+S0         15.0  30.0  66.0  114.0
+S1          2.0   4.0   6.0    9.0
+S2         11.5  16.0  23.0   26.0
+S3         15.0  19.0  19.0   19.0
+S4         25.0  27.0  33.0   38.0
+S5         10.0  16.0  22.0   28.0
+S6          3.0  13.0  25.0   44.5
+
+Retraced distance (m), median  [list type: random]
+list_size     6      12     24     40
+strategy                             
+S0          54.0  129.0  349.5  649.5
+S1           9.0   15.0   30.0   40.5
+S2          30.0   54.0   93.0  129.0
+S3         120.0  132.0  132.0  126.0
+S4          76.5   97.5  132.0  165.0
+S5         142.5  214.5  328.5  435.0
+S6          18.0   51.0  118.5  244.5
+
+Paired change in walking distance, median over lists (negative = shorter walk)
+           S2 vs S1 (cost of the category rule)  S2 vs S3 (vs habitual shopper)  S2 vs S0 (vs plain list app)  S4 vs S1 (staple + aisle-search cost)  S4 vs S3 (staple + aisle search vs habitual)  S5 vs S1 (empirical travel-deviation excursions)  S5 vs S3 (excursions vs habitual)  S6 vs S1 (literature-informed stochastic shopper)
+list_size                                                                                                                                                                                                                                                                                                                                 
+6                                          41.3                           -66.1                         -14.7                                  236.7                                         -14.7                                             219.4                              -22.3                                               11.4
+12                                         54.2                           -51.8                         -31.8                                  202.3                                          -7.3                                             220.5                                0.3                                               38.2
+24                                         56.5                           -33.1                         -48.4                                  144.9                                           5.0                                             220.6                               34.4                                               65.6
+40                                         59.5                           -17.9                         -59.3                                  119.4                                          12.9                                             221.3                               65.6                                              109.2 (%)
+
+Sensitivity (list size 24): 16 combinations of walking speed [0.6, 0.8, 1.0, 1.2] m/s and pick time [10, 18, 25, 35] s.
+Ranking by total time, fastest first, is S1 < S2 < S6 < S3 < S4 < S0 < S5 in 16 of 16.
